@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  # ---------------- REDIS (Task 1) ----------------
+  redis-node1:
+    image: redis:7
+    container_name: redis-node1
+    ports:
+      - "6379:6379"
+
+  redis-node2:
+    image: redis:7
+    container_name: redis-node2
+    ports:
+      - "6380:6379"
+    depends_on:
+      - redis-node1
+    command: redis-server --replicaof redis-node1 6379
+
+  # ---------------- ETCD (Task 2) ----------------
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.0
+    container_name: etcd
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    environment:
+      - ETCDCTL_API=3
+      - ETCD_NAME=etcd
+      - ETCD_INITIAL_CLUSTER=etcd=http://etcd:2380
+      - ETCD_INITIAL_CLUSTER_STATE=new
+      - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
